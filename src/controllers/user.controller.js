@@ -55,11 +55,8 @@ const registerUser = asyncHandler( async (req, res) => {
     //console.log(req.files);
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
-
     //const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-
-    
     let coverImageLocalPath;
     if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
         coverImageLocalPath = req.files.coverImage[0].path
@@ -80,8 +77,7 @@ const registerUser = asyncHandler( async (req, res) => {
 
     const user = await User.create({
         fullName,
-        // avatar: avatar.url,
-        // avatar: avatar?.url,
+        avatar: avatar.url,
         coverImage: coverImage?.url || "",
         email, 
         password,
@@ -253,7 +249,7 @@ const changeCurrentPassword = asyncHandler(async(req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"))
 })
 
-const getCurrectUser = asyncHandler(async(req, res) => {
+const getCurrentUser = asyncHandler(async(req, res) => {
     return res
     .status(200)
     .json(200, req.user, "currect user fetched successfully")
@@ -316,39 +312,6 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
     )
 })
 
-
-const updateUserCoverImage = asyncHandler(async(req, res) => {
-    const coverImageLocalPath = req.file?.path
-
-    if (!coverImageLocalPath) {
-        throw new ApiError(400, "Cover image file is missing")
-    }
-
-    //TODO: delete old image - assignment
-
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
-
-    if (!coverImage.url) {
-        throw new ApiError(400, "Error while uploading on cover image")
-        
-    }
-
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
-        {
-            $set:{
-                coverImage: coverImage.url
-            }
-        },
-        {new: true}
-    ).select("-password")
-
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200, user, "Cover image updated successfully")
-    )
-})
 
 const getUserChannelProfile = asyncHandler(async(req, res) => {
     const {username} = req.params
@@ -473,6 +436,39 @@ const getWatchHistory = asyncHandler(async(req, res) => {
             user[0].watchHistory,
             "Watch history fetched successfully"
         )
+    )
+})
+
+const updateUserCoverImage = asyncHandler(async(req, res) => {
+    const coverImageLocalPath = req.file?.path
+
+    if (!coverImageLocalPath) {
+        throw new ApiError(400, "Cover image file is missing")
+    }
+
+    //TODO: delete old image - assignment
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    if (!coverImage.url) {
+        throw new ApiError(400, "Error while uploading on cover image")
+        
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                coverImage: coverImage.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, user, "Cover image updated successfully")
     )
 })
 
